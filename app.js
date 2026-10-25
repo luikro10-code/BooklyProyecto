@@ -414,7 +414,36 @@
     document.getElementById("menu-toggle").setAttribute("aria-expanded", "false");
   }
 
+  const THEME_STORAGE_KEY = "bookly-theme-v1";
+  let currentTheme = "light";
+  try {
+    currentTheme = localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+  } catch (error) {
+    console.error("No se pudo leer la preferencia de tema de Bookly:", error);
+  }
+  function applyTheme(theme) {
+    const isDark = theme === "dark";
+    document.documentElement.dataset.theme = isDark ? "dark" : "light";
+    const button = document.getElementById("theme-toggle");
+    button.setAttribute("aria-pressed", String(isDark));
+    button.setAttribute("aria-label", isDark ? "Activar modo claro" : "Activar modo oscuro");
+    button.setAttribute("title", isDark ? "Activar modo claro" : "Activar modo oscuro");
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", isDark ? "#151a24" : "#f5f7fb");
+  }
+  applyTheme(currentTheme);
+
   document.addEventListener("click", (event) => {
+    if (event.target.closest("#theme-toggle")) {
+      currentTheme = currentTheme === "dark" ? "light" : "dark";
+      applyTheme(currentTheme);
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, currentTheme);
+      } catch (error) {
+        console.error("No se pudo guardar la preferencia de tema de Bookly:", error);
+        toast("No se pudo guardar la preferencia de tema en este navegador.", "error");
+      }
+      return;
+    }
     const pageButton = event.target.closest("[data-page]");
     if (pageButton) return navigate(pageButton.dataset.page);
     const actionButton = event.target.closest("[data-action]");
